@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -9,7 +12,11 @@ import (
 )
 
 func main() {
+	Log1()
 	Log2()
+	PrettyLoging()
+	PrettyOutput()
+	MultipleLogOutput()
 }
 
 func Log1() {
@@ -36,4 +43,36 @@ func PrettyLoging() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	log.Info().Str("foo", "bar").Msg("Hello world")
+}
+
+func PrettyOutput() {
+	output := zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339}
+	output.FormatLevel = func(i interface{}) string {
+		return strings.ToUpper(fmt.Sprintf("| %-6s|", i))
+	}
+	output.FormatMessage = func(i interface{}) string {
+		return fmt.Sprintf("***%s****", i)
+	}
+	output.FormatFieldName = func(i interface{}) string {
+		return fmt.Sprintf("%s:", i)
+	}
+	output.FormatFieldValue = func(i interface{}) string {
+		return strings.ToUpper(fmt.Sprintf("%s", i))
+	}
+
+	log := zerolog.New(output).With().Timestamp().Logger()
+
+	log.Info().Str("foo", "bar").Msg("Hello World")
+
+	// Output: 2006-01-02T15:04:05Z07:00 | INFO  | ***Hello World**** foo:BAR
+}
+
+func MultipleLogOutput() {
+	consoleWriter := zerolog.ConsoleWriter{Out: os.Stdout}
+
+	multi := zerolog.MultiLevelWriter(consoleWriter, os.Stdout)
+
+	logger := zerolog.New(multi).With().Timestamp().Logger()
+
+	logger.Info().Msg("Hello World!")
 }
