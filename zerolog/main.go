@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/rs/zerolog/log"
 
 	"github.com/rs/zerolog"
@@ -28,4 +30,10 @@ func Log2() {
 	log.Debug().
 		Str("Name", "Tom").
 		Send()
+}
+
+func PrettyLoging() {
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
+	log.Info().Str("foo", "bar").Msg("Hello world")
 }
